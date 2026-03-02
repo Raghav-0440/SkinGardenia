@@ -1,0 +1,5 @@
+2025-12-18 11:27:06,070 - MLService - INFO - Started 2 worker threads
+2025-12-18 11:27:06,083 - MLService - INFO - Starting ML service on port 5001
+2025-12-18 11:27:39,587 - MLService - INFO - Received GET request for path: /health
+2025-12-18 11:28:07,464 - MLService - INFO - Received GET request for path: /
+2025-12-18 11:28:07,464 - MLService - WARNING - Path not found: /

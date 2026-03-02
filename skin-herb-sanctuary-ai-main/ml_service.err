@@ -1,0 +1,4 @@
+C:\Users\LENOVO\Desktop\Major Project\skin-herb-sanctuary-ai-main\backend\src\ml_service.py:15: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+  import cgi
+127.0.0.1 - - [18/Dec/2025 11:27:39] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [18/Dec/2025 11:28:07] "GET / HTTP/1.1" 404 -
