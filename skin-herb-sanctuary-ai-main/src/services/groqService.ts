@@ -22,7 +22,7 @@ type GroqResponse = {
   };
 };
 
-const GROQ_API_KEY = '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'; // Updated API key
+const GROQ_API_KEY = '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'; // Updated API key
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const ALLOWED_PLANTS = [

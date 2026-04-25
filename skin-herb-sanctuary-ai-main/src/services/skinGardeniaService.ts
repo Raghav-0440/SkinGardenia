@@ -9,7 +9,7 @@ const getApiKey = (): string => {
     return envKey;
   }
   // Fallback to hardcoded API key
-  return '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';
+  return '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';
 };
 
 const GROQ_API_KEY = getApiKey();
