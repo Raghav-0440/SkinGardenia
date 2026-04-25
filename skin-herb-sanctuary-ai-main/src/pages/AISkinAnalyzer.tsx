@@ -5,6 +5,8 @@ import { Upload, X, Loader2, AlertCircle, CheckCircle2, Info } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { homeRemedies } from "@/data/homeRemediesData";
+import { plantsData } from "@/data/plantsData";
 
 // Types for API response
 interface Prediction {
@@ -20,6 +22,78 @@ interface AnalysisResult {
   requires_review?: boolean;
 }
 
+interface RecommendationSet {
+  heading: string;
+  remedies: string[];
+  plants: string[];
+  careTips: string[];
+}
+
+const CONDITION_RECOMMENDATIONS: Record<string, RecommendationSet> = {
+  milia: {
+    heading: "Supportive care for Milia-prone skin",
+    remedies: ["Papaya and Honey Face Pack", "Oatmeal and Honey Face Mask", "Rice Water Toner"],
+    plants: ["Aloe Vera", "Calendula", "Gotu Kola"],
+    careTips: [
+      "Use gentle exfoliation 1-2 times weekly to reduce dead-skin buildup.",
+      "Avoid heavy or pore-clogging creams around the eyes.",
+      "Do not squeeze bumps; seek professional extraction if persistent.",
+    ],
+  },
+  eczema: {
+    heading: "Soothing support for Eczema-prone skin",
+    remedies: ["Honey Aloe Face Mask", "Aloe Vera Gel with Rose Water", "Cucumber Face Mask"],
+    plants: ["Hemp Seed Oil", "Nettles", "Calendula"],
+    careTips: [
+      "Keep skin moisturized immediately after cleansing.",
+      "Use fragrance-free products and avoid hot water.",
+      "Patch-test any new remedy before full use.",
+    ],
+  },
+  keratosis: {
+    heading: "Texture-focused care for Keratosis-prone skin",
+    remedies: ["Oatmeal and Honey Face Mask", "Turmeric and Gram Flour Face Pack", "Rice Water Toner"],
+    plants: ["Gotu Kola", "Aloe Vera", "Turmeric"],
+    careTips: [
+      "Use gentle exfoliating products; avoid harsh scrubbing.",
+      "Hydrate skin daily to reduce roughness.",
+      "Use sunscreen consistently to protect skin texture.",
+    ],
+  },
+  acne: {
+    heading: "Clarifying support for Acne-prone skin",
+    remedies: ["Neem and Turmeric Face Pack", "Rose Water and Aloe Vera Mask", "Cucumber and Mint Face Mask"],
+    plants: ["Neem", "Holy Basil (Tulsi)", "Oregon Grape"],
+    careTips: [
+      "Cleanse gently twice daily and avoid over-washing.",
+      "Choose non-comedogenic skincare and makeup.",
+      "Avoid touching or picking active lesions.",
+    ],
+  },
+};
+
+const normalizeCondition = (condition: string): string => condition.toLowerCase().trim();
+
+const getRecommendationsForCondition = (condition: string): RecommendationSet => {
+  const normalized = normalizeCondition(condition);
+
+  if (normalized.includes("milia")) return CONDITION_RECOMMENDATIONS.milia;
+  if (normalized.includes("eczema") || normalized.includes("dermatitis")) return CONDITION_RECOMMENDATIONS.eczema;
+  if (normalized.includes("keratosis")) return CONDITION_RECOMMENDATIONS.keratosis;
+  if (normalized.includes("acne") || normalized.includes("pimple")) return CONDITION_RECOMMENDATIONS.acne;
+
+  return {
+    heading: "General skin-support recommendations",
+    remedies: ["Rose Water and Aloe Vera Mask", "Honey Aloe Face Mask", "Cucumber Face Mask"],
+    plants: ["Aloe Vera", "Calendula", "Turmeric"],
+    careTips: [
+      "Keep a simple skincare routine with mild cleanser and moisturizer.",
+      "Use sunscreen daily to prevent irritation and discoloration.",
+      "Consult a dermatologist for persistent or worsening symptoms.",
+    ],
+  };
+};
+
 const AISkinAnalyzer = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -28,6 +102,17 @@ const AISkinAnalyzer = () => {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const topCondition = analysisResult?.top_predictions?.[0]?.condition ?? "";
+  const recommendations = topCondition ? getRecommendationsForCondition(topCondition) : null;
+
+  const recommendedRemedies = recommendations
+    ? homeRemedies.filter((remedy) => recommendations.remedies.includes(remedy.name))
+    : [];
+
+  const availablePlants = Object.values(plantsData);
+  const recommendedPlants = recommendations
+    ? availablePlants.filter((plant) => recommendations.plants.includes(plant.name))
+    : [];
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -391,6 +476,51 @@ const AISkinAnalyzer = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Recommendations */}
+                  {recommendations && (
+                    <div className="rounded-lg p-4 border bg-emerald-900/10 border-emerald-800/50 space-y-4">
+                      <h3 className="text-emerald-300 font-semibold text-lg">
+                        Recommended Home Remedies & Plants
+                      </h3>
+                      <p className="text-gray-300 text-sm">{recommendations.heading}</p>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-[#222] rounded-lg p-4 border border-[#333]">
+                          <h4 className="text-white font-medium mb-3">Home Remedies</h4>
+                          <div className="space-y-2">
+                            {recommendedRemedies.map((remedy) => (
+                              <p key={remedy.id} className="text-gray-300 text-sm">
+                                • {remedy.name}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="bg-[#222] rounded-lg p-4 border border-[#333]">
+                          <h4 className="text-white font-medium mb-3">Helpful Plants</h4>
+                          <div className="space-y-2">
+                            {recommendedPlants.map((plant) => (
+                              <p key={plant.id} className="text-gray-300 text-sm">
+                                • {plant.name}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#222] rounded-lg p-4 border border-[#333]">
+                        <h4 className="text-white font-medium mb-3">Care Tips</h4>
+                        <div className="space-y-2">
+                          {recommendations.careTips.map((tip) => (
+                            <p key={tip} className="text-gray-300 text-sm">
+                              • {tip}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Decision/Screening Result */}
                   {analysisResult.decision && (
